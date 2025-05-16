@@ -38,34 +38,23 @@ Unfortunately, workarounds easily get buried there and the OG of this Doc is out
 There are [two install scripts
 for standalone](https://lutris.net/games/dcs-world/) on Lutris
 ![Lutris Install Scripts](images/DCS.openbeta.png)
-I used the latter labeled Standalone Open Beta version, but they both should work
-as DCS no longer has an "OpenBeta" and I believe that the install scripts may be borked.
-this will download, the DCS updater and you should install the game
+I used the latter labeled Standalone Open Beta version, but they both should work as DCS no longer has an "OpenBeta" and I believe that the install scripts may be borked. this will download, the DCS updater and you should install the game.
 
 ### Getting it working with Lutris
+This step should be by the lutris installer, but check just in case.
+Start the game once first to create the prefix(here for an explination of what a prefix is), then use lutris's Winetricks to add these .dll and font.
 
-Standalone install needs some Winetricks applied.    
-Start the game once first to create the prefix([here](https://wiki.archlinux.org/title/Wine#WinePREFIX) for an explination of what a prefix is), then use lutris's Winetricks
-to add these .dll and font.
-```
 vcrun2019(optional causes issues) corefonts xact d3dcompiler_47
-```
-you can open Winetricks in lutris by clicking on DCS Do not open, 1 LMB click only, then click on the Wine glass at the bottom of the screen  
-![Winetricks](images/Winetricks.png)
+
+you can open Winetricks in lutris by clicking on DCS Do not open, 1 LMB click only, then click on the Wine glass at the bottom of the screen
+Winetricks
 
 You need to add a "dll override" aswell. As of 2.9.12, `wbemprox=n` needs to be overridden.
 In lutris, you can do so under "runner options".
+
 ![wbemprox](images/wbemprox.png)
 
-#### (updated for 2.9.12.5336)
-
-If you plan on using DCS with a VR headset you'll want to use Proton and the easiest way i've found
-to get it working, is through Steam(not the Steam version of the game but adding
-the game to Steam) however keep working with Wine and Lutris for now
-
-If you would rather use headtracking via opentrack  
-I'd recommend you keep using Wine as opentrack does not support the steam method
-
+## Duplicate Lutris Config
 before you move on, you should have an install via lutris that opens the DCS_Updater.exe
 make sure you have used it to install the game files at this point and duplicate the confg
 in lutris, then change the duplicated lutris config to launch the DCS.exe MT or not, dosen't matter
@@ -77,9 +66,37 @@ So at this point you should get a black screen a little bit smaller than your di
 you'll need to add this the the launch arguments of Lutris `--no-launcher`
 you can do so under "game options" in the arguments field
 
+## VR with Lutris
 
-With that change, you should be able to log in but once the game starts you
-will see a black screen. you have two options from here, proceede with Wine or use Proton under Steam(Recommended for VR)
+Use Envision to setup your VR Headset. You'll also want to have Steam, SteamVR, and Proton Experimental(other versions of Proton may work, but weren't tested, and we're not actually using steam vr, it's needed to calibrate in envision)
+
+In lutris, select DCS, click the arrow beside Play, and select configure then nder the Game Options tab, 
+```--no-launcher --force_enable_VR --force_OpenXR```
+go in the arguments field.
+
+Under the System Options tab, in the Environment Variables section, click add.
+First KEY is 
+```PRESSURE_VESSEL_FILESYSTEMS_RW```
+VALUE
+```/run/user/1000/monado_comp_ipc```
+
+then click add again
+KEY
+```XR_RUNTIME_JSON```
+VALUE
+```/home/$USER/.local/share/envision/prefixes/lighthouse_default/share/openxr/1/openxr_monado.json```
+You can also click the 3 dots in Envision to copy the environment variables, if you're not using the default envision profiles
+
+you have two options from here, proceede with Wine or use Proton under Steam(Recommended for VR)
+
+#### (updated for 2.9.12.5336)
+
+If you plan on using DCS with a VR headset you'll want to use Proton and the easiest way i've found
+to get it working, is through Steam(not the Steam version of the game but adding
+the game to Steam) however keep working with Wine and Lutris for now
+
+If you would rather use headtracking via opentrack  
+I'd recommend you keep using Wine as opentrack does not support the steam method
 
 ## Native Voice Chat black screen Bug
 ### NOTE: the following dosen't seem to always be an issue

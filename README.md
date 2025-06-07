@@ -18,14 +18,14 @@ Unfortunately, workarounds easily get buried there and the OG of this Doc is out
       * [Lutris](#getting-it-working-with-Lutris)
       * [Black screen Launcher bypass](#Black-screen-launcher-bypass)
       * [Native-Voice-Chat-Bug](#Native-Voice-Chat-Bug)
-      * [Porting to Steam(BROKEN)](#Porting-to-Steam(BROKEN))
+      * [Porting to Steam](#Porting-to-Steam)
    * [Bugs and Fixes](#known-issues-and-fixes)
       * [System ram leak](#system-ram-leak)
       * [Broken Contrails](#Contrails-are-puffy/broken-up)
       * [fx_5_0 error](#fx_5_0-error-shaders-not-compiling)
       * [Apache Crashes Game](#Apache-crashes-game)
       * [MFD/Sight texture bug](#-AH-64/F-18/Ka-50/Mi-24P-MFD/sights-broken)
-   * [Vr References](#Vr-References)
+   * [Vr](#Vr)
    * [3rd party programs/tools](#3rd-party-programs/tools)
       * [Headtracking](#headtracking)
       * [SRS](#simple-radio-standalone-srs)
@@ -98,16 +98,19 @@ and remove the calls to voicechat on lines 118-129 and 453 look for the lines hi
 The game should now start.
 
 
-## Porting-to-Steam(BROKEN)
+## Porting-to-Steam
 
 so first thing you're gonna want to do is add the DCS.exe as a Steam game
 
 ![Porting to Steam](images/DCStoSteam.png)
 
 then add these launch options(some debug info, and the no launcher option from before)  
-```WineDLLOVERRIDES="wbemprox=n" WineDEBUG="+timestamp,+pid,+tid,+seh,+debugstr,+module" %command% --no-launcher```  
+```WineDLLOVERRIDES="wbemprox=n" WINEDEBUG="+timestamp,+pid,+tid,+seh,+debugstr,+module"  %command% --proton```  
 optionally you can add the gamemoderun command, however that requres you have gamemode installed  
-```WineDLLOVERRIDES="wbemprox=n" WineDEBUG="+timestamp,+pid,+tid,+seh,+debugstr,+module" gamemoderun %command% --no-launcher```  
+```WineDLLOVERRIDES="wbemprox=n" WINEDEBUG="+timestamp,+pid,+tid,+seh,+debugstr,+module" gamemoderun %command% --proton```
+and set your Target to include ```--no-launcher```, so it should look something like this:
+```"/path/to/DCS World OpenBeta/bin-mt/DCS.exe" --no-launcher```
+Where obviously the path is your personal path to DCS, mt or not, with quotation marks around it, except --no-launcher
 
 also I found the most sucess with Proton experimental but try different ones out see what works
 
@@ -166,9 +169,43 @@ but if you can get your hands on a copy of `C:/Windows/Fonts` than that will fix
 
 see [texture reformat](#texture-reformat)
 
-# Vr References
+# Vr
 
-As far as VR on linux is concerned your milage may vary but, if you havent at least attempted it before
+## VR Through OpenComposite on Steam
+
+For this I used Monado, but as far as you have an OpenXR runtime set, it should work fine and be agnostic of your setup (no guarantees.)
+
+Steps:
+1) Get OpenComposite, OpenComposite allows for OpenVR apps to run in your OpenXR runtime (in my case, Monado), OpenComposite can be downloaded [here](https://gitlab.com/api/v4/projects/znixian%2Fopenovr/jobs/artifacts/openxr/download?job=ubuntu-build), this is a .zip file and may need to be renamed as such for you to extract it.
+2) Extract OpenComposite, the folder should look like OpenComposite/bin/linux64. Note the location of the OpenComposite folder (the folder 1 above /bin/)
+3) Open Steam, go to Games->Add a non-steam game to my library.
+4) Here, click browse and find your DCS exe (either MT or standard, I have only tested with MT though)
+5) Find the new Steam library entry (Should be called DCS.exe) and right-click then click properties.
+6) Now your Target should be the location of that executable, and the Start In should be it's folder, for safety, wrap the Target field's value in quotation marks since we'll be adding more later.
+7) Go to the Compatability section of DCS.exe's properties, enable Force the use of a specific Steam Play compatability tool and select a proton version (note I have only tested Proton GE, so it may be valuable to [download the latest version](https://github.com/GloriousEggroll/proton-ge-custom/releases))
+8) Go back to the Shortcut section in the properties, and change your Target field to include ```--no-launcher --force_enable_VR --force_steam_VR``` after your quoted DCS.exe's path. (You can try --force_OpenXR instead of --force_steam
+   VR, it has however never worked for me) (You do NOT need SteamVR installed/configured for this!)
+9) Where the files mentioned are, is up to you, but now you should set the Launch Options to this:
+
+```VR_OVERRIDE=/path/to/OpenComposite XR_RUNTIME_JSON=/path/to/openxr_monado-dev.json PRESSURE_VESSEL_FILESYSTEMS_RW=$XDG_RUNTIME_DIR/monado_comp_ipc WINEDLLOVERRIDES="wbemprox=n" %command% --proton```
+
+If you don't use monado, you don't need the monado_comp_ipc there, but you may need to replace it with your alternative, this is a pretty standard environment variable that a lot of Linux VR users set, so you should be able to find your alternative if you look hard enough.
+
+If you use Monado, the openxr_monado-dev.json will be in your Monado's build directory under /monado/openxr_monado-dev.json but if you didn't compile Monado yourself, it may have installed itself to /usr/share/openxr/1/openxr_monado.json.
+
+If the openxr_monado.json does not exist in a subdirector of $HOME, you need to add /run/host/ before your path to the XR_RUNTIME_JSON
+
+For example, this is mine:
+![DCS Properties](images/DCSVR.png)
+
+10) From here, if you start DCS, it will prompt you to sign into your DCS account, once done, you should be on a DCS splash screen... for a while, if you are concerned about it not working, I would check your ```monado-service``` logs since they should mention OpenXR clients connecting to Monado, you should see ```application_name: 'OpenComposite_wine64-preloader'``` and ```application_name: 'wineopenxr test instance'``` and then finally ```application_name: 'DCS'```, if you see DCS, there should be no problems in launching the game. If you see none of these in Monado (or your alternative) then it means that OpenXR and OpenComposite is failing to connect to your runtime, try running a simpler OpenXR application like xr_gears or hello_xr, if they also don't connect, something is wrong with your XR_RUNTIME_JSON, so make sure it exists and points to ```libopenxr_monado.so``` and ```libmonado.so.25.0.0```
+
+If DCS doesn't open, try removing all of the VR related Launch Option environment variables, and the arguments from Target and launch Steam in a terminal to see it's output.
+
+If you want your userdata from lutris/wine, refer to [Porting to steam](#Porting-to-Steam)
+## Other methods
+
+As for other methods for VR on linux, your mileage may vary, but if you havent at least attempted it before
 this should get you started [Linux VR Adventures discord](https://discord.gg/qdUWFe4RDV) this is where I go to ask all of my questions about Monado and Envision
 # 3rd party programs/tools
 

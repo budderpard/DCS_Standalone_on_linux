@@ -10,16 +10,15 @@ in the [Proton issuetracker](https://github.com/ValveSoftware/Proton/issues/1722
 and in the [Matrix chat](https://matrix.to/#/#dcs-on-linux:matrix.org).  
 Unfortunately, workarounds easily get buried there and the OG of this Doc is outdated  
 (I will try to keep this one up to date but I make no promises)  
-**last update:4/24/2025**  
+**last update:11/20/26**  
 
 ## Contents
 
    * [Installation](#Getting-it-installed-via-Lutris)
       * [Lutris](#getting-it-working-with-Lutris)
-      * [Black screen Launcher bypass](#Black-screen-launcher-bypass)
-      * [Native-Voice-Chat-Bug](#Native-Voice-Chat-Bug)
-      * [Porting to Steam(BROKEN)](#Porting-to-Steam(BROKEN))
+      * [Porting to Steam](#Porting-to-Steam)
    * [Bugs and Fixes](#known-issues-and-fixes)
+      * [Native-Voice-Chat-Bug](#Native-Voice-Chat-Bug)
       * [System ram leak](#system-ram-leak)
       * [Broken Contrails](#Contrails-are-puffy/broken-up)
       * [fx_5_0 error](#fx_5_0-error-shaders-not-compiling)
@@ -57,7 +56,7 @@ You need to add a "dll override" aswell. As of 2.9.12, `wbemprox=n` needs to be 
 In lutris, you can do so under "runner options".
 ![wbemprox](images/wbemprox.png)
 
-#### (updated for 2.9.12.5336)
+#### (updated for 2.9.31.29434)
 
 If you plan on using DCS with a VR headset you'll want to use Proton and the easiest way i've found
 to get it working, is through Steam(not the Steam version of the game but adding
@@ -71,41 +70,19 @@ make sure you have used it to install the game files at this point and duplicate
 in lutris, then change the duplicated lutris config to launch the DCS.exe MT or not, dosen't matter
 we will be working with the duplicated one, not the original
 
-## Black screen launcher bypass
 
-So at this point you should get a black screen a little bit smaller than your display that'll be the launcher
-you'll need to add this the the launch arguments of Lutris `--no-launcher`
-you can do so under "game options" in the arguments field
+With that change, you should be able to log in and the game should start you have two options from here, proceed with Wine or use Proton under Steam(Recommended for VR)
 
 
-With that change, you should be able to log in but once the game starts you
-will see a black screen. you have two options from here, proceede with Wine or use Proton under Steam(Recommended for VR)
-
-## Native Voice Chat black screen Bug
-### NOTE: the following dosen't seem to always be an issue
-#### If you proceed  you will have to redo this step every time you repair the game and possibly when ED updates the optionDB.lua
-see [Porting to Steam](#Porting-to-Steam) for using Proton(Via Steam), just skip this step
-
-I have a workaround for this problem however it removes the in game voice chat functionality
-witch I find to be a downside but `¯\_(ツ)_/¯`
-
-you'll need to modify the optionsDB.lua(modified ver included at the top of page) located at   
-```/INSTALL_DIR/MissionEditor/modules/Options/optionsDb.lua```  
-and remove the calls to voicechat on lines 118-129 and 453 look for the lines highlighted in the following 2 pictures,
-![examplecode](images/118-129.png)
-![examplecode](images/453.png)
-
-The game should now start.
-
-
-## Porting-to-Steam(BROKEN)
+## Porting-to-Steam
 
 so first thing you're gonna want to do is add the DCS.exe as a Steam game
 
 ![Porting to Steam](images/DCStoSteam.png)
 
-then add these launch options(some debug info, and the no launcher option from before)  
+then add these launch options(some debug info, and the no launcher option from before if your are going to use VR, the launcher might cause issues with proton(untested))  
 ```WineDLLOVERRIDES="wbemprox=n" WineDEBUG="+timestamp,+pid,+tid,+seh,+debugstr,+module" %command% --no-launcher```  
+
 optionally you can add the gamemoderun command, however that requres you have gamemode installed  
 ```WineDLLOVERRIDES="wbemprox=n" WineDEBUG="+timestamp,+pid,+tid,+seh,+debugstr,+module" gamemoderun %command% --no-launcher```  
 
@@ -125,6 +102,8 @@ now that you've found the Steam Proton prefix, you need to link(I used a symlink
 to the one in your lutris install for instance the command I used in arch was:   
 ```<USERNAME>@PC ~> ln -s /home/<USERNAME>/Games/dcs-world/drive_c/users/<USERNAME>/Saved\ Games/ /home/<USERNAME>/.local/share/Steam/Steamapps/compatdata/2824223594/pfx/drive_c/users/Steamuser/```  
 ### On Arch a filepath with spaces can either be added with ["/File Path/"] or [/File\ Path/] different systems may vary, check your respective wiki
+
+After all that, DCS should be working, standalone VIA steam
 
 ## Known issues and fixes
 
@@ -147,6 +126,21 @@ set that directory and steam will dump log files there
 
 If you can't find your issue, or have found a solution for one, please discuss it in
 the [matix](https://matrix.to/#/#dcs-on-linux:matrix.org) chat or in [ED's Discord server](https://discord.com/invite/eagledynamics) so I can update the guide
+
+## Native Voice Chat black screen Bug(no longer an issue)
+#### If you proceed  you will have to redo this step every time you repair the game and possibly when ED updates the optionDB.lua
+  
+I have a workaround for this problem however it removes the in game voice chat functionality
+witch I find to be a downside but `¯\_(ツ)_/¯`
+
+you'll need to modify the optionsDB.lua(modified ver included at the top of page) located at   
+```/INSTALL_DIR/MissionEditor/modules/Options/optionsDb.lua```  
+and remove the calls to voicechat on lines 118-129 and 453 look for the lines highlighted in the following 2 pictures,
+![examplecode](images/118-129.png)
+![examplecode](images/453.png)
+
+The game should now start.
+
 
 ## System ram leak
 when using the VCrun 2019 package, proton tends to fall flat on it's face attempting to load some of the .dll's and this causes an infinite loop that eats up all of your ram, the easiest fix is to remove/overwrite VCrun2019 with either 2015 or 2022
@@ -199,7 +193,7 @@ mkdir 'INSTALL_DIR/drive_c/users/<USERNAME>/Saved Games/DCS.openbeta/fxo/'
 
 Native the above listed aircraft have issues with sight/mfd textures not working due to image format issues with Wine/Proton the fix requires you to convert the textures so that they are compatable with Wine/Proton rendering pipelines, unfortunately this breaks Pure Texture IC see the original post [here](https://github.com/ValveSoftware/Proton/issues/1722#issuecomment-2116194839), you will need to redo this every time you repair the game as it will overwrite these rexported textures with the original ones
 
-For this script to work you will need the [imagemagick](https://imagemagick.org/index.php) package, you may need to edit the script so that it works on your install of DCS and you will need to change the filepath, also I wouldent remove the extra files like the Mi-24 and Ka-50 just incase you get them later so that you dont have to remember to come back to this page
+For this script to work you will need the [imagemagick](https://imagemagick.org/index.php) package, you may need to edit the script so that it works on your install of DCS and you will need to change the filepath, also I wouldn't remove the extra files like the Mi-24 and Ka-50 just incase you get them later so that you dont have to remember to come back to this page
 
 [Original Script](https://github.com/ValveSoftware/Proton/issues/1722#issuecomment-2116194839)  
 [Edited Script](DCSApachetextureconvert.txt):  
